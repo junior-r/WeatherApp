@@ -5,15 +5,93 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.css" rel="stylesheet" />
+    <!-- Toggle DarkMode -->
+    <script>
+        // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
     <title>Aplicación del Clima</title>
 </head>
 <body>
-  <div class="contenedor">
-    <h1>Aplicación de Clima</h1>
-    <input type="text" id="ciudadEntrada" placeholder="Ingrese una ciudad">
-    <button id="botonBusqueda">Buscar</button>
-    <div id="datosClima"></div>
+
+  <div class="w-full p-6 dark:bg-gray-700 min-h-screen flex flex-col justify-between" style="min-height: 100vh;">
+    <div class="">
+      <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
+          <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+          <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+      </button>  
+
+      <div class="w-full max-w-md p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 mx-auto">
+        <form class="space-y-6 mb-4" action="#">
+            <h5 class="text-2xl text-gray-900 dark:text-white text-center font-bold">¡Consulta el clima de tu ciudad preferida!</h5>
+            <div>
+                <label for="inputCityUser" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Escribe tu ciudad</label>
+                <input type="search" name="cityInput" id="inputCityUser" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Londres" required>
+            </div>
+            <button type="submit" id="searchButton" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">¿Cómo está el Clima?</button>
+            <div class="text-sm font-medium text-gray-500 dark:text-gray-300 text-center">
+                Datos en tiempo real por <a href="https://openweathermap.org" target="_blank" class="text-blue-700 hover:underline dark:text-blue-500">OpenWeather</a>
+            </div>
+        </form>
+
+        <div class="weatherData border border-blue-600 rounded-lg p-4 shadow-lg dark:bg-gray-700 dark:hover:bg-gray-800 transition-all hover:bg-blue-100" id="weatherData">
+          <section class="header flex justify-between gap-2 flex-wrap items-center">
+            <div>
+              <h5 class="text-normal font-medium text-gray-900 dark:text-white text-left m-0" id="cityName">Caracas, VE</h5>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 m-0">Lat: <span id="latData">10.488</span>, Lon: <span id="lonData">-66.8792</span></p>
+            </div>
+            <img class="w-10 h-10 rounded-full border border-blue-300 object-cover bg-gray-400" loading="lazy" src="https://openweathermap.org/img/wn/03n@2x.png" alt="Weather Icon" id="iconWeather">
+          </section>
+          <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-500">
+
+          <div class="temperature flex gap-1 items-center justify-between mb-2">
+            <p class="text-blue-400 font-semibold flex gap-1 items-center justify-start">
+              <box-icon type='solid' name='thermometer' color="#808080"></box-icon>
+              <span>Temperatura</span>
+            </p>
+
+            <span class="text-yellow-500 font-bold dark:text-yellow-300" id="temperatureData">27°C</span>
+          </div>
+
+          <div class="humidity flex gap-1 items-center justify-between mb-4">
+            <p class="text-blue-400 font-semibold flex gap-1 items-center justify-start">
+              <box-icon type='solid' name='droplet' color="#808080"></box-icon>
+              <span>Humedad</span>
+            </p>
+
+            <span class="text-yellow-500 font-bold dark:text-yellow-300" id="humidityData">55%</span>
+          </div>
+
+          <p class="description text-center font-bold text-blue-400">El estado meteorológico es: <span id="descriptionData" class="text-yellow-500 dark:text-yellow-300">Nubes Dispersas</span></p>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <footer class="bg-white rounded-lg shadow m-4 dark:bg-gray-800">
+      <div class="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
+        <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2023 <a href="./index.html" class="hover:underline">WeatherApp</a>. All Rights Reserved.
+      </span>
+      <ul class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-500 dark:text-gray-400 sm:mt-0">
+          <li> Developed with ❤️ by 
+              <a href="https://instagram.com/junior.r14" class="hover:underline text-blue-500" target="_blank">Junior Ruiz 🇻🇪</a>
+          </li>
+      </ul>
+      </div>
+    </footer>
+
   </div>
-  <script src="script.js"></script>
+
+  <script src="./handleDarkMode.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
+  <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="./script.js"></script>
 </body>
 </html>
